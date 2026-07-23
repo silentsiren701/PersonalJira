@@ -1,0 +1,57 @@
+"use client";
+
+import Link from "next/link";
+import { useActionState } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { registerAction } from "@/lib/actions/auth-actions";
+
+export function RegisterForm() {
+  const [state, formAction, isPending] = useActionState(
+    registerAction,
+    undefined,
+  );
+
+  return (
+    <form action={formAction} className="space-y-4">
+      <div>
+        <Label htmlFor="name">名字（可选）</Label>
+        <Input id="name" name="name" type="text" autoComplete="name" />
+      </div>
+      <div>
+        <Label htmlFor="email">邮箱</Label>
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+        />
+      </div>
+      <div>
+        <Label htmlFor="password">密码</Label>
+        <Input
+          id="password"
+          name="password"
+          type="password"
+          autoComplete="new-password"
+          minLength={8}
+          required
+        />
+        <p className="mt-1 text-xs text-slate-400">至少 8 位</p>
+      </div>
+      {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
+      <Button type="submit" className="w-full" disabled={isPending}>
+        {isPending ? "注册中…" : "注册"}
+      </Button>
+      <p className="text-center text-sm text-slate-500">
+        已经有账号？{" "}
+        <Link href="/login" className="font-medium text-slate-900 underline">
+          登录
+        </Link>
+      </p>
+    </form>
+  );
+}
