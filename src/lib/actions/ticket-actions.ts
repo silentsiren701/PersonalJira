@@ -45,38 +45,40 @@ export async function createTicketAction(
     return { error: parsed.error.issues[0]?.message ?? "输入不合法" };
   }
 
-  await db.transaction(async (tx) => {
-    // Atomic per-board counter increment — see docs/adr/0002.
-    const [updated] = await tx
-      .update(boards)
-      .set({ nextTicketNumber: sql`${boards.nextTicketNumber} + 1` })
-      .where(eq(boards.id, boardId))
-      .returning({ next: boards.nextTicketNumber });
-    const number = updated.next - 1;
+  // No db.transaction() here: the neon-http driver is stateless (one HTTPS
+  // request per query) and doesn't support transactions. Number uniqueness
+  // is guaranteed by the single atomic UPDATE...RETURNING below (plus the
+  // unique constraint); a failure between steps at worst skips a number or
+  // leaves a ticket without tags — both harmless for this tool.
+  const [updated] = await db
+    .update(boards)
+    .set({ nextTicketNumber: sql`${boards.nextTicketNumber} + 1` })
+    .where(eq(boards.id, boardId))
+    .returning({ next: boards.nextTicketNumber });
+  const number = updated.next - 1;
 
-    const [positionRow] = await tx
-      .select({ maxPosition: sql<number>`coalesce(max(${tickets.position}), 0)` })
-      .from(tickets)
-      .where(and(eq(tickets.boardId, boardId), eq(tickets.status, "not_started")));
+  const [positionRow] = await db
+    .select({ maxPosition: sql<number>`coalesce(max(${tickets.position}), 0)` })
+    .from(tickets)
+    .where(and(eq(tickets.boardId, boardId), eq(tickets.status, "not_started")));
 
-    const [ticket] = await tx
-      .insert(tickets)
-      .values({
-        boardId,
-        number,
-        title: parsed.data.title,
-        description: parsed.data.description ?? "",
-        color: parsed.data.color ?? "yellow",
-        position: (positionRow?.maxPosition ?? 0) + 1,
-      })
-      .returning();
+  const [ticket] = await db
+    .insert(tickets)
+    .values({
+      boardId,
+      number,
+      title: parsed.data.title,
+      description: parsed.data.description ?? "",
+      color: parsed.data.color ?? "yellow",
+      position: (positionRow?.maxPosition ?? 0) + 1,
+    })
+    .returning();
 
-    if (parsed.data.tagIds?.length) {
-      await tx
-        .insert(ticketTags)
-        .values(parsed.data.tagIds.map((tagId) => ({ ticketId: ticket.id, tagId })));
-    }
-  });
+  if (parsed.data.tagIds?.length) {
+    await db
+      .insert(ticketTags)
+      .values(parsed.data.tagIds.map((tagId) => ({ ticketId: ticket.id, tagId })));
+  }
 
   revalidatePath(`/b/${board.key}`);
 }
@@ -111,28 +113,27 @@ export async function updateTicketAction(
     return { error: parsed.error.issues[0]?.message ?? "输入不合法" };
   }
 
-  await db.transaction(async (tx) => {
-    await tx
-      .update(tickets)
-      .set({
-        ...(parsed.data.title !== undefined ? { title: parsed.data.title } : {}),
-        ...(parsed.data.description !== undefined
-          ? { description: parsed.data.description }
-          : {}),
-        ...(parsed.data.color !== undefined ? { color: parsed.data.color } : {}),
-        updatedAt: new Date(),
-      })
-      .where(and(eq(tickets.id, ticketId), eq(tickets.boardId, boardId)));
+  // Sequential (non-transactional) — see the note in createTicketAction.
+  await db
+    .update(tickets)
+    .set({
+      ...(parsed.data.title !== undefined ? { title: parsed.data.title } : {}),
+      ...(parsed.data.description !== undefined
+        ? { description: parsed.data.description }
+        : {}),
+      ...(parsed.data.color !== undefined ? { color: parsed.data.color } : {}),
+      updatedAt: new Date(),
+    })
+    .where(and(eq(tickets.id, ticketId), eq(tickets.boardId, boardId)));
 
-    if (parsed.data.tagIds !== undefined) {
-      await tx.delete(ticketTags).where(eq(ticketTags.ticketId, ticketId));
-      if (parsed.data.tagIds.length > 0) {
-        await tx
-          .insert(ticketTags)
-          .values(parsed.data.tagIds.map((tagId) => ({ ticketId, tagId })));
-      }
+  if (parsed.data.tagIds !== undefined) {
+    await db.delete(ticketTags).where(eq(ticketTags.ticketId, ticketId));
+    if (parsed.data.tagIds.length > 0) {
+      await db
+        .insert(ticketTags)
+        .values(parsed.data.tagIds.map((tagId) => ({ ticketId, tagId })));
     }
-  });
+  }
 
   revalidatePath(`/b/${board.key}`);
 }

@@ -6,6 +6,10 @@ import type { NextAuthConfig } from "next-auth";
  * the actual Credentials provider lives in `src/auth.ts`.
  */
 export default {
+  // Auth.js only auto-trusts the host in dev / on Vercel. Self-hosted
+  // production (and `next start` locally) needs this, otherwise every auth
+  // call fails with UntrustedHost. We always deploy behind hosts we control.
+  trustHost: true,
   pages: {
     signIn: "/login",
   },
