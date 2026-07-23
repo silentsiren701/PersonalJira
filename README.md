@@ -70,9 +70,25 @@ npm run dev
 
 ## 部署到 Vercel
 
-1. 把仓库推到 GitHub/GitLab，在 Vercel 里 import
-2. 在 Vercel 项目的 Environment Variables 里配置 `DATABASE_URL`、`AUTH_SECRET`（和本地 `.env.local` 一样，生产建议用单独的 Neon 分支/项目）
-3. 首次部署前（或 schema 变更后）在本地对生产库跑一次 `npm run db:push`（或用 `db:generate` + `db:migrate` 走正式迁移）
+1. 把仓库推到 GitHub，在 Vercel 里 import（之后每次 push 自动部署，无需在仓库里配任何密钥）
+2. Vercel Project → Settings → Environment Variables，添加 `DATABASE_URL`、`AUTH_SECRET`，并标记为 **Sensitive**（创建后不可再读取，只在构建/运行时注入）
+3. 可选：用 [Neon 的 Vercel 集成](https://neon.tech/docs/guides/vercel) 自动注入 `DATABASE_URL`，还能给每个 Preview Deployment 建独立数据库分支
+4. 首次部署前（或 schema 变更后）对生产库跑一次 `npm run db:push`（或 `db:generate` + `db:migrate` 走正式迁移）
+
+### 凭据隔离原则
+
+- **生产凭据只存在 Vercel**，永远不落到本机文件
+- 本机 `.env.local` 只放**开发专用**凭据：建议在 Neon 建一个 dev 分支（Branches → New Branch），用它的连接串；`AUTH_SECRET` 也用开发专用的
+- 不想把变量写进文件时，可以用 Vercel CLI：`vercel link` 后 `vercel env run -- npm run dev`（变量只注入该命令进程）；或 `vercel env pull .env.local`
+- `.gitignore` 已排除 `.env*` 和 `.vercel/`；再配合 `.cursorignore`（见下）降低凭据进入 AI 上下文的概率——注意这是 best-effort，不是绝对边界
+
+```gitignore
+# .cursorignore（手动创建在仓库根目录）
+.env
+.env.*
+.vercel/
+!.env.local.example
+```
 
 ## 目录速览
 
