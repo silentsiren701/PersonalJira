@@ -13,6 +13,22 @@ export default {
   pages: {
     signIn: "/login",
   },
+  /**
+   * App-specific cookie name so a leftover `authjs.session-token` encrypted
+   * with an old AUTH_SECRET (or another Auth.js app on localhost) does not
+   * spam JWTSessionError / "no matching decryption secret" on every page.
+   */
+  cookies: {
+    sessionToken: {
+      name: "tr.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
   providers: [],
   callbacks: {
     authorized({ auth, request }) {

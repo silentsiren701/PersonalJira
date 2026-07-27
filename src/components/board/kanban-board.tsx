@@ -30,10 +30,27 @@ function emptyColumns(): Columns {
   return { todo: [], in_progress: [], blocked: [], closed: [] };
 }
 
+/** Map legacy / unexpected status values so Kanban never indexes a missing column. */
+function normalizeStatus(status: string): TicketStatus {
+  if (status === "not_started") return "todo";
+  if (
+    status === "todo" ||
+    status === "in_progress" ||
+    status === "blocked" ||
+    status === "closed"
+  ) {
+    return status;
+  }
+  return "todo";
+}
+
 function groupByStatus(ticketList: TicketWithTags[]): Columns {
   const columns = emptyColumns();
   for (const ticket of ticketList) {
-    columns[ticket.status].push(ticket);
+    const status = normalizeStatus(ticket.status);
+    columns[status].push(
+      status === ticket.status ? ticket : { ...ticket, status },
+    );
   }
   (Object.keys(columns) as TicketStatus[]).forEach((status) => {
     columns[status].sort((a, b) => a.position - b.position);

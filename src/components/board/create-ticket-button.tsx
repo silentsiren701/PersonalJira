@@ -60,7 +60,7 @@ export function CreateTicketButton({
             <Input id="new-ticket-title" name="title" required autoFocus />
           </div>
           <div>
-            <Label htmlFor="new-ticket-description">Description (Markdown)</Label>
+            <Label htmlFor="new-ticket-description">Description</Label>
             <textarea
               id="new-ticket-description"
               name="description"

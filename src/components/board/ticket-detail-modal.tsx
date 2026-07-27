@@ -166,7 +166,7 @@ function TicketDetailPanel({
 
           <div>
             <div className="mb-1 flex items-center justify-between">
-              <Label className="mb-0">Description (Markdown)</Label>
+              <Label className="mb-0">Description</Label>
               <button
                 type="button"
                 onClick={() => setEditingDescription((v) => !v)}

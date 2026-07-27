@@ -100,32 +100,27 @@ function UpdateBubble({
         "group relative rounded-2xl rounded-bl-md border border-slate-200 bg-white px-3 py-2 shadow-sm",
       )}
     >
-      <div className="mb-1 flex items-center justify-between gap-2">
-        <time className="text-[11px] text-slate-400">
-          {formatTicketUpdatedAt(update.createdAt)}
-        </time>
-        {!editing && (
-          <div className="flex gap-1 opacity-0 transition group-hover:opacity-100">
-            <button
-              type="button"
-              onClick={() => setEditing(true)}
-              className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-              aria-label="Edit update"
-            >
-              <Pencil className="h-3 w-3" />
-            </button>
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"
-              aria-label="Delete update"
-            >
-              <Trash2 className="h-3 w-3" />
-            </button>
-          </div>
-        )}
-      </div>
+      {!editing && (
+        <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition group-hover:opacity-100">
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+            aria-label="Edit update"
+          >
+            <Pencil className="h-3 w-3" />
+          </button>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"
+            aria-label="Delete update"
+          >
+            <Trash2 className="h-3 w-3" />
+          </button>
+        </div>
+      )}
 
       {editing ? (
         <form action={formAction} className="space-y-2">
@@ -154,7 +149,7 @@ function UpdateBubble({
           </div>
         </form>
       ) : (
-        <div className="prose prose-sm max-w-none text-slate-800">
+        <div className="prose prose-sm max-w-none pr-8 text-slate-800">
           <Markdown remarkPlugins={[remarkGfm]}>{update.body}</Markdown>
         </div>
       )}
