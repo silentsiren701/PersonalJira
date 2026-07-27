@@ -9,9 +9,9 @@ export default async function BoardsPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="mb-1 text-lg font-semibold text-slate-900">我的 Boards</h1>
+      <h1 className="mb-1 text-lg font-semibold text-slate-900">My Boards</h1>
       <p className="mb-6 text-sm text-slate-500">
-        按场景切换（个人 / 公司 / …），每个 Board 有自己的 Tag 和 Ticket 编号。
+        Switch by context (personal, work, …). Each Board has its own Tags and Ticket numbers.
       </p>
 
       {boards.length > 0 && (

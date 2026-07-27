@@ -20,7 +20,7 @@ export function AppHeader({ boards }: { boards: Board[] }) {
           className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-900"
         >
           <LogOut className="h-4 w-4" />
-          登出
+          Log out
         </button>
       </form>
     </header>

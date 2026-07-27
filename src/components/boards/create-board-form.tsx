@@ -19,8 +19,8 @@ export function CreateBoardForm() {
       className="flex flex-wrap items-end gap-3 rounded-lg border border-dashed border-slate-300 p-4"
     >
       <div className="min-w-[160px] flex-1">
-        <Label htmlFor="board-name">Board 名称</Label>
-        <Input id="board-name" name="name" placeholder="比如：公司事务" required />
+        <Label htmlFor="board-name">Board name</Label>
+        <Input id="board-name" name="name" placeholder="e.g. Work tasks" required />
       </div>
       <div className="w-28">
         <Label htmlFor="board-key">Key</Label>
@@ -34,7 +34,7 @@ export function CreateBoardForm() {
         />
       </div>
       <Button type="submit" disabled={isPending}>
-        {isPending ? "创建中…" : "创建 Board"}
+        {isPending ? "Creating…" : "Create Board"}
       </Button>
       {state?.error && (
         <p className="w-full text-sm text-red-600">{state.error}</p>

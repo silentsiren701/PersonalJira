@@ -44,23 +44,23 @@ export function CreateTicketButton({
           className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-slate-300 py-2 text-sm text-slate-500 hover:border-slate-400 hover:text-slate-700"
         >
           <Plus className="h-4 w-4" />
-          新建 Ticket
+          New Ticket
         </button>
       ) : (
         <Button type="button" size="sm" onClick={() => setOpen(true)}>
           <Plus className="h-4 w-4" />
-          新建 Ticket
+          New Ticket
         </Button>
       )}
 
-      <Modal open={open} onClose={() => setOpen(false)} title="新建 Ticket">
+      <Modal open={open} onClose={() => setOpen(false)} title="New Ticket">
         <form ref={formRef} action={formAction} className="space-y-4">
           <div>
-            <Label htmlFor="new-ticket-title">标题</Label>
+            <Label htmlFor="new-ticket-title">Title</Label>
             <Input id="new-ticket-title" name="title" required autoFocus />
           </div>
           <div>
-            <Label htmlFor="new-ticket-description">简介（Markdown）</Label>
+            <Label htmlFor="new-ticket-description">Description (Markdown)</Label>
             <textarea
               id="new-ticket-description"
               name="description"
@@ -69,11 +69,11 @@ export function CreateTicketButton({
             />
           </div>
           <div>
-            <Label>颜色</Label>
+            <Label>Color</Label>
             <ColorPicker name="color" defaultValue="yellow" />
           </div>
           <div>
-            <Label>Tag</Label>
+            <Label>Tags</Label>
             <TagCheckboxList tags={boardTags} />
           </div>
           {state?.error && (
@@ -85,10 +85,10 @@ export function CreateTicketButton({
               variant="secondary"
               onClick={() => setOpen(false)}
             >
-              取消
+              Cancel
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "创建中…" : "创建"}
+              {isPending ? "Creating…" : "Create"}
             </Button>
           </div>
         </form>

@@ -3,16 +3,20 @@
 import { useEffect, type ReactNode } from "react";
 import { X } from "lucide-react";
 
+import { cn } from "@/lib/utils";
+
 export function Modal({
   open,
   onClose,
   title,
   children,
+  size = "md",
 }: {
   open: boolean;
   onClose: () => void;
   title?: string;
   children: ReactNode;
+  size?: "md" | "xl";
 }) {
   useEffect(() => {
     if (!open) return;
@@ -31,25 +35,33 @@ export function Modal({
       onClick={onClose}
     >
       <div
-        className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-5 shadow-xl"
+        className={cn(
+          "relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-lg bg-white shadow-xl",
+          size === "xl" ? "max-w-5xl" : "max-w-lg",
+        )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-4 flex items-center justify-between">
-          {title ? (
+        {title != null && (
+          <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-5 py-3">
             <h2 className="text-base font-semibold text-slate-900">{title}</h2>
-          ) : (
-            <span />
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+              aria-label="Close"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+        <div
+          className={cn(
+            "min-h-0 flex-1",
+            size === "md" ? "overflow-y-auto p-5" : "overflow-hidden",
           )}
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-            aria-label="关闭"
-          >
-            <X className="h-4 w-4" />
-          </button>
+        >
+          {children}
         </div>
-        {children}
       </div>
     </div>
   );

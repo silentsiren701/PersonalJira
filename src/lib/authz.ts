@@ -9,7 +9,7 @@ export async function requireOwnedBoard(userId: string, boardId: string) {
     where: and(eq(boards.id, boardId), eq(boards.ownerId, userId)),
   });
   if (!board) {
-    throw new Error("找不到这个 Board，或者你没有权限操作它");
+    throw new Error("Board not found or you don't have permission");
   }
   return board;
 }

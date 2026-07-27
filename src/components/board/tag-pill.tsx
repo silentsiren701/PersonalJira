@@ -22,7 +22,7 @@ export function TagPill({
           type="button"
           onClick={onRemove}
           className="text-slate-400 hover:text-slate-700"
-          aria-label={`移除 ${tag.name}`}
+          aria-label={`Remove ${tag.name}`}
         >
           ×
         </button>

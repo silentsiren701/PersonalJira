@@ -15,7 +15,7 @@ export default async function LoginPage() {
         <h1 className="mb-1 text-xl font-semibold text-slate-900">
           Ticket Record
         </h1>
-        <p className="mb-6 text-sm text-slate-500">登录你的私人 Ticket 看板</p>
+        <p className="mb-6 text-sm text-slate-500">Sign in to your private Ticket board</p>
         <LoginForm />
       </div>
     </main>

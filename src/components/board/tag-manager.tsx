@@ -32,13 +32,13 @@ export function TagManager({
         onClick={() => setOpen(true)}
       >
         <TagsIcon className="h-4 w-4" />
-        管理 Tag
+        Manage Tags
       </Button>
 
-      <Modal open={open} onClose={() => setOpen(false)} title="管理 Tag">
+      <Modal open={open} onClose={() => setOpen(false)} title="Manage Tags">
         <div className="mb-4 flex flex-wrap gap-2">
           {tags.length === 0 && (
-            <p className="text-sm text-slate-400">还没有 Tag</p>
+            <p className="text-sm text-slate-400">No tags yet</p>
           )}
           {tags.map((tag) => (
             <TagPill
@@ -47,7 +47,7 @@ export function TagManager({
               onRemove={() => {
                 if (
                   window.confirm(
-                    `删除 Tag "${tag.name}"？已有 Ticket 会失去这个 Tag（Ticket 本身不受影响）。`,
+                    `Delete tag "${tag.name}"? Tickets keep their other tags.`,
                   )
                 ) {
                   void deleteTagAction(boardId, tag.id);
@@ -62,12 +62,12 @@ export function TagManager({
           className="flex items-end gap-3 border-t border-slate-100 pt-4"
         >
           <div className="flex-1">
-            <Label htmlFor="tag-name">新 Tag 名称</Label>
+            <Label htmlFor="tag-name">New tag</Label>
             <Input id="tag-name" name="name" required />
           </div>
           <ColorPicker name="color" defaultValue="blue" />
           <Button type="submit" size="sm" disabled={isPending}>
-            添加
+            Add
           </Button>
         </form>
         {state?.error && (

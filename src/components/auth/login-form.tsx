@@ -17,7 +17,7 @@ export function LoginForm() {
   return (
     <form action={formAction} className="space-y-4">
       <div>
-        <Label htmlFor="email">邮箱</Label>
+        <Label htmlFor="email">Email</Label>
         <Input
           id="email"
           name="email"
@@ -27,7 +27,7 @@ export function LoginForm() {
         />
       </div>
       <div>
-        <Label htmlFor="password">密码</Label>
+        <Label htmlFor="password">Password</Label>
         <Input
           id="password"
           name="password"
@@ -38,12 +38,12 @@ export function LoginForm() {
       </div>
       {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
       <Button type="submit" className="w-full" disabled={isPending}>
-        {isPending ? "登录中…" : "登录"}
+        {isPending ? "Signing in…" : "Sign in"}
       </Button>
       <p className="text-center text-sm text-slate-500">
-        还没有账号？{" "}
+        Don&apos;t have an account?{" "}
         <Link href="/register" className="font-medium text-slate-900 underline">
-          注册
+          Sign up
         </Link>
       </p>
     </form>

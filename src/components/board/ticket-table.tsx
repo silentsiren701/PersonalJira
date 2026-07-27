@@ -24,7 +24,7 @@ export function TicketTable({
   if (tickets.length === 0) {
     return (
       <p className="px-4 py-10 text-center text-sm text-slate-400">
-        没有符合条件的 Ticket
+        No Tickets match your filters
       </p>
     );
   }
@@ -33,10 +33,10 @@ export function TicketTable({
     <table className="w-full text-sm">
       <thead>
         <tr className="border-b border-slate-200 text-left text-xs text-slate-500">
-          <th className="px-4 py-2 font-medium">编号</th>
-          <th className="px-4 py-2 font-medium">标题</th>
+          <th className="px-4 py-2 font-medium">ID</th>
+          <th className="px-4 py-2 font-medium">Title</th>
           <th className="px-4 py-2 font-medium">Tag</th>
-          <th className="px-4 py-2 font-medium">状态</th>
+          <th className="px-4 py-2 font-medium">Status</th>
         </tr>
       </thead>
       <tbody>

@@ -1,48 +1,52 @@
-# Ticket Record（个人 Ticket 追踪工具）
+# Ticket Record
 
-一个人使用的、简化版私人 Jira 看板：按 Board 分场景管理 Ticket，用 Tag 分类，用固定状态列追踪进度。原型隐喻是便签纸（手动排序、固定色板），不是团队协作工具。
+A personal, simplified Jira-style board: Boards for scenarios, Tags for classification, sticky-note Tickets with a fixed status workflow. Not a team collaboration tool.
 
 ## Language
 
 **Board**:
-一个独立的任务追踪空间，对应一个使用场景（如「个人」「公司」）。每个 Board 属于唯一一个 Owner，拥有自己的一套 Tag 和独立的 Ticket 编号序列。
+An independent tracking space for one scenario (e.g. personal vs work). Each Board has one Owner, its own Tags, and its own Ticket number sequence.
 _Avoid_: Project, Workspace
 
 **Board Key**:
-Board 的短标识，创建时手动填写，最多 4 位大写字母（如 `WORK`），同一 Owner 下唯一，创建后允许修改。用于拼出 Ticket 的展示编号（如 `WORK-12`）。
+Short Board identifier, set manually at creation, up to 4 uppercase letters (e.g. `WORK`), unique per Owner, mutable afterward. Used in display ids like `WORK-12`.
 _Avoid_: Board Code, Prefix
 
 **Ticket**:
-一条待追踪的任务，包含标题、Markdown 简介、状态、便签色、所属 Board、零或多个 Tag。类比 Jira 的 Issue，但没有子任务、故事点、经办人、优先级等概念。
-_Avoid_: Issue, Task, Story（本项目故意不用 Story，用 Tag 代替其分类作用）
+A trackable unit of work: title, optional Markdown description (summary / design notes), status, sticky color, Board, zero or more Tags. Not a Jira Story — Tags replace that classification role.
+_Avoid_: Issue, Task, Story
 
 **Ticket Number**:
-Ticket 在其所属 Board 内的顺序编号，从 1 递增，同一 Board 内不重复、不复用。展示为 `{Board Key}-{Ticket Number}`（如 `WORK-12`）。Ticket 的内部唯一标识是 UUID，Number 只是派生的展示字段。
-_Avoid_: Ticket ID（ID 指内部 UUID，与 Number 是两个不同的字段）
+Per-Board sequential display number starting at 1. Shown as `{Board Key}-{Ticket Number}`. Internal identity is a UUID.
+_Avoid_: Ticket ID (ID means the UUID; Number is the display field)
 
 **Tag**:
-归属于某个 Board 的自由分类标签，含义由 Owner 自行定义、系统不做语义解释。一个 Ticket 可挂多个 Tag，Tag 不跨 Board 共享、不跨 Board 复用。
+A free-form label owned by one Board. Meaning is Owner-defined. Many Tags per Ticket; Tags are never shared across Boards.
 _Avoid_: Label
 
 **Status**:
-Ticket 的进度状态，固定四种：`未开始`、`进行中`、`Blocked`、`关闭`。全局统一，不可按 Board 自定义或扩展。
-_Avoid_: Workflow, Stage
+Fixed Ticket workflow, global (not per-Board): `To Do`, `In Progress`, `Blocked`, `Closed`. Stored as `todo` / `in_progress` / `blocked` / `closed`.
+_Avoid_: Workflow, Stage, Done (UI says Closed, not Done)
+
+**Update**:
+A chronological progress-log entry on a Ticket: Markdown body only. Ordered oldest→newest; new entries append at the bottom (chat-like). Hard-deletable with confirm; inline-editable; no edit badge / version history. Distinct from Description (optional summary) and from Comments (out of scope as a collaboration feature).
+_Avoid_: Comment, Activity Log, Note
 
 **Owner**:
-拥有一个或多个 Board 的用户。当前版本每个 Board 只有一个 Owner，没有协作者/成员概念。
-_Avoid_: User（Owner 强调「这是谁的 Board」这一归属关系；User 泛指账户本身）
+The user who owns one or more Boards. v1 has no Board members.
+_Avoid_: User (when the ownership relation is what matters)
 
-**便签色 / Ticket Color**:
-Ticket 卡片的视觉颜色，从一组固定便签色板中选择，纯视觉分类，不影响状态、排序或任何业务逻辑。
-_Avoid_: Priority（本项目明确不做优先级字段；颜色与优先级无关）
+**Ticket Color**:
+Sticky-note palette color on a Ticket (and Tags). Visual only; not priority.
+_Avoid_: Priority
 
-**手动排序 / Position**:
-同一 Board、同一 Status 列内 Ticket 的先后顺序，由 Owner 手动拖拽决定，代替优先级字段表达「先做哪个」。
+**Position**:
+Manual sort order within a Board + Status column, set by drag-and-drop.
 _Avoid_: Priority, Rank
 
-## Out of Scope（当前版本明确不做的概念）
+## Out of Scope
 
-- **Priority**（优先级字段）：用手动排序代替
-- **Comment / Activity Log**（评论/动态流）：Markdown 简介本身承载记录，未来协作需求出现后再引入
-- **Attachment**（附件上传）：靠 Markdown 外链，不引入对象存储
-- **Board 协作 / Ticket Transfer**（跨 Owner 的 Board 共享或 Ticket 转移）：数据模型不堵死，但当前不实现
+- **Priority** field — use Position instead
+- **Comment / Activity Log** as collaboration features — Updates are a personal progress log only
+- **Attachment** uploads — Markdown links only
+- **Board sharing / Ticket transfer** between Owners — model may allow later; not implemented

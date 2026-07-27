@@ -9,15 +9,25 @@ import { stickyColors } from "@/lib/validation";
 export function ColorPicker({
   name,
   defaultValue = "yellow",
+  value: controlledValue,
+  onChange,
 }: {
-  name: string;
+  name?: string;
   defaultValue?: StickyColor;
+  value?: StickyColor;
+  onChange?: (color: StickyColor) => void;
 }) {
-  const [value, setValue] = useState<StickyColor>(defaultValue);
+  const [uncontrolled, setUncontrolled] = useState<StickyColor>(defaultValue);
+  const value = controlledValue ?? uncontrolled;
+
+  function select(color: StickyColor) {
+    if (controlledValue === undefined) setUncontrolled(color);
+    onChange?.(color);
+  }
 
   return (
     <div className="flex gap-2">
-      <input type="hidden" name={name} value={value} />
+      {name && <input type="hidden" name={name} value={value} />}
       {stickyColors.map((color) => {
         const classes = STICKY_COLOR_CLASSES[color];
         const selected = value === color;
@@ -25,7 +35,7 @@ export function ColorPicker({
           <button
             key={color}
             type="button"
-            onClick={() => setValue(color)}
+            onClick={() => select(color)}
             aria-label={color}
             aria-pressed={selected}
             className={cn(

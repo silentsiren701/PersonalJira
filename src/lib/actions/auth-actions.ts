@@ -21,7 +21,7 @@ export async function registerAction(
     password: formData.get("password"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "输入不合法" };
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
   const { email, password, name } = parsed.data;
@@ -30,7 +30,7 @@ export async function registerAction(
     where: eq(users.email, email),
   });
   if (existing) {
-    return { error: "该邮箱已被注册，直接登录试试" };
+    return { error: "That email is already registered. Try signing in." };
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
@@ -52,7 +52,7 @@ export async function registerAction(
     // it must be rethrown, not swallowed as an error.
     if (isRedirectError(err)) throw err;
     if (err instanceof AuthError) {
-      return { error: "注册成功，但自动登录失败，请手动登录" };
+      return { error: "Account created, but sign-in failed. Please sign in manually." };
     }
     throw err;
   }
@@ -67,7 +67,7 @@ export async function loginAction(
     password: formData.get("password"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "输入不合法" };
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
   try {
@@ -79,7 +79,7 @@ export async function loginAction(
   } catch (err) {
     if (isRedirectError(err)) throw err;
     if (err instanceof AuthError) {
-      return { error: "邮箱或密码不对" };
+      return { error: "Incorrect email or password" };
     }
     throw err;
   }

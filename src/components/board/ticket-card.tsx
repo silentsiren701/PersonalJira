@@ -37,7 +37,7 @@ export function TicketCard({
     >
       <button
         type="button"
-        aria-label="拖拽排序"
+        aria-label="Drag to reorder"
         className="absolute right-1.5 top-1.5 cursor-grab touch-none rounded p-1 text-slate-400 opacity-0 hover:bg-black/5 group-hover:opacity-100 active:cursor-grabbing"
         {...attributes}
         {...listeners}

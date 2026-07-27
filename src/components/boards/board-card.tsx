@@ -30,7 +30,7 @@ export function BoardCard({ board }: { board: Board }) {
         className="space-y-3 rounded-lg border border-slate-200 bg-white p-4"
       >
         <div>
-          <Label htmlFor={`name-${board.id}`}>名称</Label>
+          <Label htmlFor={`name-${board.id}`}>Name</Label>
           <Input
             id={`name-${board.id}`}
             name="name"
@@ -52,7 +52,7 @@ export function BoardCard({ board }: { board: Board }) {
         {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
         <div className="flex gap-2">
           <Button type="submit" size="sm" disabled={isPending}>
-            {isPending ? "保存中…" : "保存"}
+            {isPending ? "Saving…" : "Save"}
           </Button>
           <Button
             type="button"
@@ -60,7 +60,7 @@ export function BoardCard({ board }: { board: Board }) {
             variant="secondary"
             onClick={() => setEditing(false)}
           >
-            取消
+            Cancel
           </Button>
         </div>
       </form>
@@ -73,7 +73,7 @@ export function BoardCard({ board }: { board: Board }) {
         type="button"
         onClick={() => setEditing(true)}
         className="absolute right-3 top-3 rounded p-1 text-slate-400 opacity-0 hover:bg-slate-100 hover:text-slate-700 group-hover:opacity-100"
-        aria-label="编辑 Board"
+        aria-label="Edit Board"
       >
         <Pencil className="h-4 w-4" />
       </button>

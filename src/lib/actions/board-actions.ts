@@ -16,14 +16,14 @@ export async function createBoardAction(
   formData: FormData,
 ): Promise<FormActionResult> {
   const session = await auth();
-  if (!session?.user) return { error: "请先登录" };
+  if (!session?.user) return { error: "Please sign in" };
 
   const parsed = createBoardSchema.safeParse({
     name: formData.get("name"),
     key: formData.get("key"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "输入不合法" };
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
   const existing = await db.query.boards.findFirst({
@@ -33,7 +33,7 @@ export async function createBoardAction(
     ),
   });
   if (existing) {
-    return { error: `Key "${parsed.data.key}" 已经被用过了` };
+    return { error: `Key "${parsed.data.key}" is already in use` };
   }
 
   await db.insert(boards).values({
@@ -51,19 +51,19 @@ export async function updateBoardAction(
   formData: FormData,
 ): Promise<FormActionResult> {
   const session = await auth();
-  if (!session?.user) return { error: "请先登录" };
+  if (!session?.user) return { error: "Please sign in" };
 
   const board = await requireOwnedBoard(session.user.id, boardId).catch(
     () => null,
   );
-  if (!board) return { error: "找不到这个 Board" };
+  if (!board) return { error: "Board not found" };
 
   const parsed = updateBoardSchema.safeParse({
     name: formData.get("name"),
     key: formData.get("key"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "输入不合法" };
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
   if (parsed.data.key !== board.key) {
@@ -73,7 +73,7 @@ export async function updateBoardAction(
         eq(boards.key, parsed.data.key),
       ),
     });
-    if (keyTaken) return { error: `Key "${parsed.data.key}" 已经被用过了` };
+    if (keyTaken) return { error: `Key "${parsed.data.key}" is already in use` };
   }
 
   await db

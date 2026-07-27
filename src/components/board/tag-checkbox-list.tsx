@@ -15,7 +15,7 @@ export function TagCheckboxList({
 }) {
   if (tags.length === 0) {
     return (
-      <p className="text-sm text-slate-400">这个 Board 还没有 Tag，先去创建一个吧</p>
+      <p className="text-sm text-slate-400">No tags on this Board yet</p>
     );
   }
 

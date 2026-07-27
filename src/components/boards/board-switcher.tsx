@@ -33,7 +33,7 @@ export function BoardSwitcher({ boards }: { boards: Board[] }) {
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-900 hover:bg-slate-50"
       >
-        {current ? `${current.name} (${current.key})` : "选择 Board"}
+        {current ? `${current.name} (${current.key})` : "Select Board"}
         <ChevronDown className="h-4 w-4 text-slate-500" />
       </button>
 
@@ -62,7 +62,7 @@ export function BoardSwitcher({ boards }: { boards: Board[] }) {
             className="flex items-center gap-1.5 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
           >
             <Plus className="h-3.5 w-3.5" />
-            管理 / 新建 Board
+            Manage / create Board
           </Link>
         </div>
       )}

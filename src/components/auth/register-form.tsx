@@ -17,11 +17,11 @@ export function RegisterForm() {
   return (
     <form action={formAction} className="space-y-4">
       <div>
-        <Label htmlFor="name">名字（可选）</Label>
+        <Label htmlFor="name">Name (optional)</Label>
         <Input id="name" name="name" type="text" autoComplete="name" />
       </div>
       <div>
-        <Label htmlFor="email">邮箱</Label>
+        <Label htmlFor="email">Email</Label>
         <Input
           id="email"
           name="email"
@@ -31,7 +31,7 @@ export function RegisterForm() {
         />
       </div>
       <div>
-        <Label htmlFor="password">密码</Label>
+        <Label htmlFor="password">Password</Label>
         <Input
           id="password"
           name="password"
@@ -40,16 +40,16 @@ export function RegisterForm() {
           minLength={8}
           required
         />
-        <p className="mt-1 text-xs text-slate-400">至少 8 位</p>
+        <p className="mt-1 text-xs text-slate-400">At least 8 characters</p>
       </div>
       {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
       <Button type="submit" className="w-full" disabled={isPending}>
-        {isPending ? "注册中…" : "注册"}
+        {isPending ? "Creating account…" : "Sign up"}
       </Button>
       <p className="text-center text-sm text-slate-500">
-        已经有账号？{" "}
+        Already have an account?{" "}
         <Link href="/login" className="font-medium text-slate-900 underline">
-          登录
+          Sign in
         </Link>
       </p>
     </form>

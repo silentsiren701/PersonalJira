@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Ticket Record",
-  description: "个人的、简化版私人 Jira Board",
+  description: "A personal, simplified private Jira-style Board",
 };
 
 export default function RootLayout({
@@ -12,7 +12,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN">
+    <html lang="en">
       <body className="bg-slate-50 text-slate-900 antialiased">{children}</body>
     </html>
   );

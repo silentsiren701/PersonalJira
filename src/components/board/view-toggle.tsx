@@ -20,7 +20,7 @@ export function ViewToggle({
             : "text-slate-600 hover:bg-slate-50",
         )}
       >
-        看板
+        Board
       </Link>
       <Link
         href={`/b/${boardKey}?view=list`}
@@ -31,7 +31,7 @@ export function ViewToggle({
             : "text-slate-600 hover:bg-slate-50",
         )}
       >
-        列表
+        List
       </Link>
     </div>
   );

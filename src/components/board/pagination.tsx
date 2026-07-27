@@ -18,7 +18,7 @@ export function Pagination({
 
   return (
     <div className="flex items-center justify-between px-4 py-3 text-sm text-slate-500">
-      <span>共 {total} 条</span>
+      <span>{total} total</span>
       <div className="flex items-center gap-3">
         <Link
           href={buildHref(Math.max(1, page - 1))}
@@ -28,7 +28,7 @@ export function Pagination({
               : "text-slate-700 hover:underline",
           )}
         >
-          上一页
+          Previous
         </Link>
         <span>
           {page} / {totalPages}
@@ -41,7 +41,7 @@ export function Pagination({
               : "text-slate-700 hover:underline",
           )}
         >
-          下一页
+          Next
         </Link>
       </div>
     </div>

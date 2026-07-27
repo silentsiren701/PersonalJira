@@ -30,26 +30,26 @@ export function TicketFilters({
       <input type="hidden" name="view" value="list" />
       <div>
         <label className="mb-1 block text-xs font-medium text-slate-500">
-          搜索标题
+          Search title
         </label>
         <input
           type="text"
           name="q"
           defaultValue={currentSearch}
-          placeholder="标题包含…"
+          placeholder="Title contains…"
           className="rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
         />
       </div>
       <div>
         <label className="mb-1 block text-xs font-medium text-slate-500">
-          状态
+          Status
         </label>
         <select
           name="status"
           defaultValue={currentStatus ?? ""}
           className="rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
         >
-          <option value="">全部</option>
+          <option value="">All</option>
           {TICKET_STATUSES.map((s) => (
             <option key={s.value} value={s.value}>
               {s.label}
@@ -59,7 +59,7 @@ export function TicketFilters({
       </div>
       <div>
         <span className="mb-1 block text-xs font-medium text-slate-500">
-          Tag（包含任一）
+          Tag (match any)
         </span>
         <div className="flex flex-wrap gap-2">
           {tags.map((tag) => {
@@ -85,7 +85,7 @@ export function TicketFilters({
             );
           })}
           {tags.length === 0 && (
-            <span className="text-sm text-slate-400">没有 Tag</span>
+            <span className="text-sm text-slate-400">No Tags</span>
           )}
         </div>
       </div>
@@ -93,14 +93,14 @@ export function TicketFilters({
         type="submit"
         className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700"
       >
-        筛选
+        Filter
       </button>
       {hasFilters && (
         <a
           href={`/b/${boardKey}?view=list`}
           className="text-sm text-slate-500 underline"
         >
-          清除筛选
+          Clear filters
         </a>
       )}
     </form>

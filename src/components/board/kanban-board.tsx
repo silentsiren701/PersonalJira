@@ -27,7 +27,7 @@ import {
 type Columns = Record<TicketStatus, TicketWithTags[]>;
 
 function emptyColumns(): Columns {
-  return { not_started: [], in_progress: [], blocked: [], closed: [] };
+  return { todo: [], in_progress: [], blocked: [], closed: [] };
 }
 
 function groupByStatus(ticketList: TicketWithTags[]): Columns {
@@ -104,7 +104,7 @@ export function KanbanBoard({
 
     setColumns((prev) => {
       const next: Columns = {
-        not_started: [...prev.not_started],
+        todo: [...prev.todo],
         in_progress: [...prev.in_progress],
         blocked: [...prev.blocked],
         closed: [...prev.closed],
@@ -153,12 +153,12 @@ export function KanbanBoard({
             key={value}
             status={value}
             label={
-              value === "closed" ? `${label}（近 7 天）` : label
+              value === "closed" ? `${label} (last 7 days)` : label
             }
             tickets={columns[value]}
             boardKey={board.key}
             footer={
-              value === "not_started" ? (
+              value === "todo" ? (
                 <CreateTicketButton boardId={board.id} boardTags={boardTags} />
               ) : undefined
             }

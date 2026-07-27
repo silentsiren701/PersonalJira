@@ -1,19 +1,23 @@
-import type { boards, tags, tickets } from "@/db/schema";
+import type { boards, tags, tickets, ticketUpdates } from "@/db/schema";
 
 export type Board = typeof boards.$inferSelect;
 export type Tag = typeof tags.$inferSelect;
 export type Ticket = typeof tickets.$inferSelect;
+export type TicketUpdate = typeof ticketUpdates.$inferSelect;
 
 export type TicketWithTags = Ticket & { tags: Tag[] };
+export type TicketWithTagsAndUpdates = TicketWithTags & {
+  updates: TicketUpdate[];
+};
 
 export type TicketStatus = Ticket["status"];
 export type StickyColor = Ticket["color"];
 
 export const TICKET_STATUSES: { value: TicketStatus; label: string }[] = [
-  { value: "not_started", label: "未开始" },
-  { value: "in_progress", label: "进行中" },
+  { value: "todo", label: "To Do" },
+  { value: "in_progress", label: "In Progress" },
   { value: "blocked", label: "Blocked" },
-  { value: "closed", label: "关闭" },
+  { value: "closed", label: "Closed" },
 ];
 
 export const STICKY_COLOR_CLASSES: Record<
@@ -43,3 +47,14 @@ export const STICKY_COLOR_CLASSES: Record<
     ring: "ring-purple-400",
   },
 };
+
+export function formatTicketUpdatedAt(date: Date | string) {
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}

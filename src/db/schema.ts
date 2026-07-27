@@ -15,9 +15,10 @@ import {
 /**
  * Fixed set of statuses a Ticket can be in. Deliberately not configurable per
  * Board — see docs/adr and CONTEXT.md ("Status").
+ * UI labels: To Do / In Progress / Blocked / Closed.
  */
 export const ticketStatusEnum = pgEnum("ticket_status", [
-  "not_started",
+  "todo",
   "in_progress",
   "blocked",
   "closed",
@@ -25,7 +26,7 @@ export const ticketStatusEnum = pgEnum("ticket_status", [
 
 /**
  * Fixed sticky-note color palette, shared by Tickets and Tags. Purely visual,
- * never drives status/sort logic. See CONTEXT.md ("便签色 / Ticket Color").
+ * never drives status/sort logic. See CONTEXT.md ("Ticket Color").
  */
 export const stickyColorEnum = pgEnum("sticky_color", [
   "yellow",
@@ -105,9 +106,9 @@ export const tickets = pgTable(
     /** Display number, unique per Board, allocated from boards.nextTicketNumber. */
     number: integer("number").notNull(),
     title: text("title").notNull(),
-    /** Markdown. */
+    /** Optional Markdown summary / design notes — not the progress log. */
     description: text("description").notNull().default(""),
-    status: ticketStatusEnum("status").notNull().default("not_started"),
+    status: ticketStatusEnum("status").notNull().default("todo"),
     color: stickyColorEnum("color").notNull().default("yellow"),
     /**
      * Manual sort order within (boardId, status). Fractional so a card can be
@@ -127,6 +128,25 @@ export const tickets = pgTable(
     unique("tickets_board_number_unique").on(table.boardId, table.number),
   ],
 );
+
+/**
+ * Chronological progress-log entries on a Ticket. See CONTEXT.md ("Update")
+ * and docs/adr/0004-ticket-updates-and-english-status-labels.md.
+ */
+export const ticketUpdates = pgTable("ticket_updates", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  ticketId: uuid("ticket_id")
+    .notNull()
+    .references(() => tickets.id, { onDelete: "cascade" }),
+  /** Markdown body. */
+  body: text("body").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
 
 /** Many-to-many join between Tickets and Tags (no primary/secondary distinction). */
 export const ticketTags = pgTable(
@@ -160,6 +180,14 @@ export const tagsRelations = relations(tags, ({ one, many }) => ({
 export const ticketsRelations = relations(tickets, ({ one, many }) => ({
   board: one(boards, { fields: [tickets.boardId], references: [boards.id] }),
   ticketTags: many(ticketTags),
+  updates: many(ticketUpdates),
+}));
+
+export const ticketUpdatesRelations = relations(ticketUpdates, ({ one }) => ({
+  ticket: one(tickets, {
+    fields: [ticketUpdates.ticketId],
+    references: [tickets.id],
+  }),
 }));
 
 export const ticketTagsRelations = relations(ticketTags, ({ one }) => ({

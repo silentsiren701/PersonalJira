@@ -15,7 +15,7 @@ export default async function RegisterPage() {
         <h1 className="mb-1 text-xl font-semibold text-slate-900">
           Ticket Record
         </h1>
-        <p className="mb-6 text-sm text-slate-500">创建一个账号，开始建 Board</p>
+        <p className="mb-6 text-sm text-slate-500">Create an account to start building Boards</p>
         <RegisterForm />
       </div>
     </main>
