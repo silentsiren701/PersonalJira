@@ -87,33 +87,43 @@ export default async function BoardPage({
       : null;
 
   return (
-    <div>
-      <BoardHeader board={board} tags={tags} view={view} />
+    <div className="flex min-h-0 flex-1 flex-col bg-slate-100">
+      <div className="border-b border-slate-200 bg-white">
+        <div className="mx-auto w-full max-w-7xl">
+          <BoardHeader board={board} tags={tags} view={view} />
+        </div>
+      </div>
 
-      {view === "board" ? (
-        <KanbanBoard board={board} boardTags={tags} initialTickets={kanbanTickets} />
-      ) : (
-        <>
-          <TicketFilters
-            boardKey={board.key}
-            tags={tags}
-            currentStatus={currentStatus}
-            currentTagIds={currentTagIds}
-            currentSearch={currentSearch}
-          />
-          <TicketTable
-            tickets={listResult!.tickets}
-            boardKey={board.key}
-            detailHrefFor={detailHrefFor}
-          />
-          <Pagination
-            page={listResult!.page}
-            pageSize={listResult!.pageSize}
-            total={listResult!.total}
-            buildHref={pageHref}
-          />
-        </>
-      )}
+      <div className="mx-auto w-full max-w-7xl flex-1 min-h-0">
+        {view === "board" ? (
+          <KanbanBoard board={board} boardTags={tags} initialTickets={kanbanTickets} />
+        ) : (
+          <div className="p-4">
+            <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <TicketFilters
+                boardKey={board.key}
+                tags={tags}
+                currentStatus={currentStatus}
+                currentTagIds={currentTagIds}
+                currentSearch={currentSearch}
+              />
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <TicketTable
+                tickets={listResult!.tickets}
+                boardKey={board.key}
+                detailHrefFor={detailHrefFor}
+              />
+              <Pagination
+                page={listResult!.page}
+                pageSize={listResult!.pageSize}
+                total={listResult!.total}
+                buildHref={pageHref}
+              />
+            </div>
+          </div>
+        )}
+      </div>
 
       <TicketDetailModal
         ticket={selectedTicket}

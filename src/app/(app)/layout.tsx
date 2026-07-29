@@ -17,9 +17,9 @@ export default async function AppLayout({
   const boards = await getBoardsForUser(session.user.id);
 
   return (
-    <div className="min-h-screen">
+    <div className="flex min-h-screen flex-col">
       <AppHeader boards={boards} />
-      {children}
+      <div className="flex min-h-0 flex-1 flex-col">{children}</div>
     </div>
   );
 }

@@ -27,16 +27,16 @@ export function KanbanColumn({
   });
 
   return (
-    <div className="flex w-72 shrink-0 flex-col rounded-lg bg-slate-100/70">
-      <div className="flex items-center justify-between px-3 py-2">
+    <div className="flex w-72 shrink-0 flex-col rounded-xl bg-slate-200/50">
+      <div className="flex items-center justify-between px-3 py-3">
         <h3 className="text-sm font-semibold text-slate-700">{label}</h3>
-        <span className="text-xs text-slate-400">{tickets.length}</span>
+        <span className="text-xs font-medium text-slate-400">{tickets.length}</span>
       </div>
       <div
         ref={setNodeRef}
         className={cn(
-          "min-h-[80px] flex-1 space-y-2 overflow-y-auto px-2 pb-2",
-          isOver && "bg-slate-200/60",
+          "min-h-[100px] flex-1 space-y-3 overflow-y-auto px-3 pb-3",
+          isOver && "bg-slate-200",
         )}
       >
         <SortableContext

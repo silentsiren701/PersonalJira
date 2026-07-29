@@ -119,52 +119,50 @@ export function KanbanBoard({
     if (!toStatus) return;
     if (fromStatus === toStatus && activeId === overId) return;
 
-    setColumns((prev) => {
-      const next: Columns = {
-        todo: [...prev.todo],
-        in_progress: [...prev.in_progress],
-        blocked: [...prev.blocked],
-        closed: [...prev.closed],
-      };
-      const fromList = next[fromStatus];
-      const movingIndex = fromList.findIndex((t) => t.id === activeId);
-      if (movingIndex === -1) return prev;
-      const [moving] = fromList.splice(movingIndex, 1);
-      const movedTicket = { ...moving, status: toStatus };
+    const next: Columns = {
+      todo: [...columns.todo],
+      in_progress: [...columns.in_progress],
+      blocked: [...columns.blocked],
+      closed: [...columns.closed],
+    };
+    const fromList = next[fromStatus];
+    const movingIndex = fromList.findIndex((t) => t.id === activeId);
+    if (movingIndex === -1) return;
+    const [moving] = fromList.splice(movingIndex, 1);
+    const movedTicket = { ...moving, status: toStatus };
 
-      const toList = next[toStatus];
-      let insertIndex = toList.length;
-      if (!overIsColumn) {
-        const overIndex = toList.findIndex((t) => t.id === overId);
-        if (overIndex !== -1) insertIndex = overIndex;
-      }
-      toList.splice(insertIndex, 0, movedTicket);
+    const toList = next[toStatus];
+    let insertIndex = toList.length;
+    if (!overIsColumn) {
+      const overIndex = toList.findIndex((t) => t.id === overId);
+      if (overIndex !== -1) insertIndex = overIndex;
+    }
+    toList.splice(insertIndex, 0, movedTicket);
 
-      const beforeTicketId = toList[insertIndex - 1]?.id ?? null;
-      const afterTicketId = toList[insertIndex + 1]?.id ?? null;
+    const beforeTicketId = toList[insertIndex - 1]?.id ?? null;
+    const afterTicketId = toList[insertIndex + 1]?.id ?? null;
 
-      startTransition(async () => {
-        await moveTicketAction({
-          ticketId: activeId,
-          boardId: board.id,
-          status: toStatus,
-          beforeTicketId,
-          afterTicketId,
-        });
+    setColumns(next);
+    startTransition(async () => {
+      await moveTicketAction({
+        ticketId: activeId,
+        boardId: board.id,
+        status: toStatus,
+        beforeTicketId,
+        afterTicketId,
       });
-
-      return next;
     });
   }
 
   return (
     <DndContext
+      id="kanban-board"
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 overflow-x-auto p-4">
+      <div className="flex gap-4 overflow-x-auto p-4 md:p-6 lg:p-8 justify-start">
         {TICKET_STATUSES.map(({ value, label }) => (
           <KanbanColumn
             key={value}

@@ -29,10 +29,10 @@ export function TicketCard({
         transition,
       }}
       className={cn(
-        "group relative rounded-md border p-2.5 shadow-sm",
+        "group relative rounded-lg border p-3 shadow-sm transition-shadow hover:shadow-md",
         classes.bg,
         classes.border,
-        isDragging && "opacity-50",
+        isDragging && "opacity-50 shadow-lg",
       )}
     >
       <button
