@@ -9,6 +9,14 @@
 - [Auth.js](https://authjs.dev)（v5），Credentials 登录（邮箱 + 密码），JWT session
 - Tailwind CSS，[`@dnd-kit`](https://dndkit.com) 做看板拖拽
 
+## Agent 接入
+
+在 Ticket 详情点击 **Give to Agent** 生成该 Ticket 的访问 Token，按面板配置共享的 `/api/mcp` 连接。切换 Ticket 时替换 `TICKET_RECORD_TOKEN` 并重新加载客户端配置。
+
+工具包括 `get_current_ticket()`（读取含标签、进展的 DTO）、`update_current_ticket({ changes })`（修改字段）、`update_ticket_item({ updateId, body, details? })`（修改该任务的进展）和 `add_ticket_update({ body, agentName?, requestId? })`（向右侧进展区追加记录）。可选的 UUID 用于避免重复记录。
+
+新增数据库字段使用 `npm run db:push` 同步到开发数据库。
+
 ## 本地开发
 
 ### 1. 装依赖
@@ -29,14 +37,15 @@ npm install
 
 ### 3. 配置环境变量
 
-复制 `.env.local.example` 为 `.env.local`，填入上一步拿到的两个值：
+复制 `.env.local.example` 为 `.env.local`，填入数据库连接串和登录密钥：
 
 ```bash
 cp .env.local.example .env.local
 ```
 
 ```ini
-DATABASE_URL=postgresql://...你的 Neon 连接串...
+DATABASE_URL=postgresql://...你的 Neon 开发分支的 pooled 连接串...
+DATABASE_URL_UNPOOLED=postgresql://...同一开发分支的 direct 连接串...
 AUTH_SECRET=...刚生成的值...
 ```
 
@@ -54,7 +63,7 @@ npm run db:push
 npm run dev
 ```
 
-打开 <http://localhost:3000>，注册一个账号，开始建 Board。
+打开 <http://localhost:3000>，登录或注册账号，开始建 Board。应用使用 Neon 开发数据库。Drizzle 优先使用 `DATABASE_URL_UNPOOLED` 执行结构同步和迁移。
 
 ## 常用脚本
 
@@ -97,4 +106,4 @@ npm run dev
 - `src/lib/actions/*` — 所有写操作（Server Actions），每个都会校验 Board 归属
 - `src/app/(app)/boards` — Board 列表/创建/改名改 Key
 - `src/app/(app)/b/[key]` — 看板 + 列表视图、Ticket 详情
-- `src/auth.ts` / `src/auth.config.ts` / `src/middleware.ts` — 登录与路由保护
+- `src/auth.ts` / `src/auth.config.ts` / `src/proxy.ts` — 登录与路由保护

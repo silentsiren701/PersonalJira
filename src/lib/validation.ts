@@ -85,6 +85,14 @@ export const updateTicketSchema = z.object({
   color: stickyColorSchema.optional(),
   status: ticketStatusSchema.optional(),
   tagIds: z.array(z.string().uuid()).optional(),
+  projectName: z.string().trim().max(120, "Project name is too long").optional(),
+  repositoryUrl: z.string().trim().max(2000).refine((value) => {
+    if (!value) return true;
+    try {
+      const url = new URL(value);
+      return ["https:", "http:"].includes(url.protocol) && !url.username && !url.password;
+    } catch { return false; }
+  }, "Use an HTTP(S) repository URL without credentials").optional(),
 });
 
 export const updateBodySchema = z
@@ -99,4 +107,5 @@ export const createUpdateSchema = z.object({
 
 export const editUpdateSchema = z.object({
   body: updateBodySchema,
+  details: z.string().max(20000, "Details are too long").optional(),
 });

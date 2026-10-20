@@ -8,20 +8,19 @@ import {
   useState,
   useTransition,
 } from "react";
-import { Pencil, Send, Trash2 } from "lucide-react";
+import { Bot, Pencil, Send, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import { Button } from "@/components/ui/button";
+import { LocalTime } from "@/components/ui/local-time";
 import {
   createUpdateAction,
   deleteUpdateAction,
   editUpdateAction,
 } from "@/lib/actions/update-actions";
-import {
-  formatTicketUpdatedAt,
-  type TicketUpdate,
-} from "@/lib/types";
+import { type TicketUpdate } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export function UpdateChain({
@@ -29,13 +28,24 @@ export function UpdateChain({
   boardId,
   updates,
   ticketUpdatedAt,
+  agentConnected,
 }: {
   ticketId: string;
   boardId: string;
   updates: TicketUpdate[];
   ticketUpdatedAt: Date | string;
+  agentConnected: boolean;
 }) {
   const listRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!agentConnected) return;
+    const refresh = () => { if (!document.hidden) router.refresh(); };
+    const timer = window.setInterval(refresh, 10000);
+    window.addEventListener("focus", refresh);
+    return () => { window.clearInterval(timer); window.removeEventListener("focus", refresh); };
+  }, [agentConnected, router]);
 
   useLayoutEffect(() => {
     const el = listRef.current;
@@ -45,7 +55,11 @@ export function UpdateChain({
 
   return (
     <div className="flex h-full min-h-[280px] flex-col border-t border-slate-200 bg-slate-50 md:border-l md:border-t-0">
+      <div className="shrink-0 border-b border-slate-200 px-4 py-3 text-sm font-medium text-slate-700">Progress
+        {agentConnected && <span className="ml-2 text-[11px] font-normal text-slate-400">Syncs every 10s</span>}
+      </div>
       <div ref={listRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+        {updates.length === 0 && <p className="py-8 text-center text-sm text-slate-400">Add progress below, or connect an agent.</p>}
         {updates.map((update) => (
           <UpdateBubble
             key={update.id}
@@ -59,7 +73,7 @@ export function UpdateChain({
       <UpdateComposer ticketId={ticketId} boardId={boardId} />
 
       <p className="shrink-0 px-4 pb-3 text-right text-[11px] text-slate-400">
-        Updated {formatTicketUpdatedAt(ticketUpdatedAt)}
+        Updated <LocalTime value={ticketUpdatedAt} />
       </p>
     </div>
   );
@@ -97,11 +111,16 @@ function UpdateBubble({
   return (
     <div
       className={cn(
-        "group relative rounded-2xl rounded-bl-md border border-slate-200 bg-white px-3 py-2 shadow-sm",
+        "group relative w-fit min-w-36 max-w-[92%] rounded-2xl border px-3 py-2 shadow-sm",
+        update.source === "agent" ? "mr-auto rounded-bl-md border-indigo-100 bg-white" : "ml-auto rounded-br-md border-slate-200 bg-slate-100",
       )}
     >
+      <div className="mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 pr-12 text-[10px] text-slate-500">
+        <span className="inline-flex items-center gap-1 font-medium">{update.source === "agent" && <Bot className="h-3 w-3" />}{update.source === "agent" ? update.agentName || "Agent" : "You"}</span>
+        <LocalTime value={update.createdAt} />
+      </div>
       {!editing && (
-        <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition group-hover:opacity-100">
+        <div className="absolute right-2 top-2 flex gap-1 opacity-70 transition group-hover:opacity-100 group-focus-within:opacity-100 md:opacity-0">
           <button
             type="button"
             onClick={() => setEditing(true)}
@@ -131,6 +150,11 @@ function UpdateBubble({
             required
             className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
           />
+          {update.source === "agent" && <>
+            <label htmlFor={`details-${update.id}`} className="text-xs text-slate-500">Details</label>
+            <textarea id={`details-${update.id}`} name="details" defaultValue={update.details} rows={6} maxLength={20000}
+              className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm" />
+          </>}
           {state?.error && (
             <p className="text-xs text-red-600">{state.error}</p>
           )}
@@ -149,8 +173,12 @@ function UpdateBubble({
           </div>
         </form>
       ) : (
-        <div className="prose prose-sm max-w-none pr-8 text-slate-800">
+        <div className="prose prose-sm max-w-none break-words text-slate-800 [overflow-wrap:anywhere]">
           <Markdown remarkPlugins={[remarkGfm]}>{update.body}</Markdown>
+          {update.details && <details className="mt-2 border-t border-slate-200 pt-2">
+            <summary className="cursor-pointer text-xs font-medium text-indigo-700">Details</summary>
+            <Markdown remarkPlugins={[remarkGfm]}>{update.details}</Markdown>
+          </details>}
         </div>
       )}
     </div>

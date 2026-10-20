@@ -7,10 +7,7 @@ import { auth } from "@/auth";
 import { db } from "@/db";
 import { ticketUpdates, tickets } from "@/db/schema";
 import { requireOwnedBoard } from "@/lib/authz";
-import {
-  createUpdateSchema,
-  editUpdateSchema,
-} from "@/lib/validation";
+import { addTicketUpdate, editTicketUpdate, TicketOperationError } from "@/lib/ticket-service";
 
 export type FormActionResult = { error: string } | undefined;
 
@@ -40,24 +37,13 @@ export async function createUpdateAction(
     return { error: "Ticket not found" };
   }
 
-  const parsed = createUpdateSchema.safeParse({
-    body: formData.get("body"),
-  });
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  const body = formData.get("body");
+  if (typeof body !== "string") return { error: "Invalid update" };
+  try {
+    await addTicketUpdate({ ticketId, boardId }, { body, source: "user" });
+  } catch (error) {
+    return { error: error instanceof TicketOperationError ? error.message : "Could not save update" };
   }
-
-  const now = new Date();
-  await db.insert(ticketUpdates).values({
-    ticketId,
-    body: parsed.data.body,
-    createdAt: now,
-    updatedAt: now,
-  });
-  await db
-    .update(tickets)
-    .set({ updatedAt: now })
-    .where(eq(tickets.id, ticketId));
 
   revalidatePath(`/b/${owned.board.key}`);
 }
@@ -77,30 +63,14 @@ export async function editUpdateAction(
     return { error: "Ticket not found" };
   }
 
-  const parsed = editUpdateSchema.safeParse({
-    body: formData.get("body"),
-  });
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  try {
+    await editTicketUpdate({ ticketId, boardId }, updateId, {
+      body: formData.get("body"),
+      details: formData.get("details") ?? undefined,
+    });
+  } catch (error) {
+    return { error: error instanceof TicketOperationError ? error.message : "Could not save update" };
   }
-
-  const existing = await db.query.ticketUpdates.findFirst({
-    where: and(
-      eq(ticketUpdates.id, updateId),
-      eq(ticketUpdates.ticketId, ticketId),
-    ),
-  });
-  if (!existing) return { error: "Update not found" };
-
-  const now = new Date();
-  await db
-    .update(ticketUpdates)
-    .set({ body: parsed.data.body, updatedAt: now })
-    .where(eq(ticketUpdates.id, updateId));
-  await db
-    .update(tickets)
-    .set({ updatedAt: now })
-    .where(eq(tickets.id, ticketId));
 
   revalidatePath(`/b/${owned.board.key}`);
 }

@@ -8,17 +8,10 @@ import { db } from "@/db";
 import { boards, ticketTags, tickets } from "@/db/schema";
 import { requireOwnedBoard } from "@/lib/authz";
 import type { TicketStatus } from "@/lib/types";
-import { createTicketSchema, updateTicketSchema } from "@/lib/validation";
+import { createTicketSchema } from "@/lib/validation";
+import { patchTicket, TicketOperationError } from "@/lib/ticket-service";
 
 export type FormActionResult = { error: string } | undefined;
-
-async function endOfColumnPosition(boardId: string, status: TicketStatus) {
-  const [row] = await db
-    .select({ maxPosition: sql<number>`coalesce(max(${tickets.position}), 0)` })
-    .from(tickets)
-    .where(and(eq(tickets.boardId, boardId), eq(tickets.status, status)));
-  return (row?.maxPosition ?? 0) + 1;
-}
 
 export async function createTicketAction(
   boardId: string,
@@ -99,40 +92,15 @@ export async function updateTicketAction(
 
   const rawTagIds = formData.getAll("tagIds").map(String).filter(Boolean);
 
-  const parsed = updateTicketSchema.safeParse({
-    title: formData.get("title") || undefined,
-    description: formData.get("description") ?? undefined,
-    color: formData.get("color") || undefined,
-    // Always an array (possibly empty) — the detail form always renders the
-    // full tag checkbox list, so "nothing checked" means "clear all tags",
-    // not "leave tags untouched". Unchecked checkboxes don't appear in
-    // FormData at all, so we can't rely on `formData.has("tagIds")` here.
-    tagIds: rawTagIds,
-  });
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
-  }
-
-  // Sequential (non-transactional) — see the note in createTicketAction.
-  await db
-    .update(tickets)
-    .set({
-      ...(parsed.data.title !== undefined ? { title: parsed.data.title } : {}),
-      ...(parsed.data.description !== undefined
-        ? { description: parsed.data.description }
-        : {}),
-      ...(parsed.data.color !== undefined ? { color: parsed.data.color } : {}),
-      updatedAt: new Date(),
-    })
-    .where(and(eq(tickets.id, ticketId), eq(tickets.boardId, boardId)));
-
-  if (parsed.data.tagIds !== undefined) {
-    await db.delete(ticketTags).where(eq(ticketTags.ticketId, ticketId));
-    if (parsed.data.tagIds.length > 0) {
-      await db
-        .insert(ticketTags)
-        .values(parsed.data.tagIds.map((tagId) => ({ ticketId, tagId })));
-    }
+  try {
+    await patchTicket({ ticketId, boardId }, {
+      title: formData.get("title") || undefined,
+      description: formData.get("description") ?? undefined,
+      color: formData.get("color") || undefined,
+      tagIds: rawTagIds,
+    });
+  } catch (error) {
+    return { error: error instanceof TicketOperationError ? error.message : "Could not save ticket" };
   }
 
   revalidatePath(`/b/${board.key}`);
@@ -153,24 +121,7 @@ export async function setTicketStatusAction(
 
   const board = await requireOwnedBoard(session.user.id, boardId);
 
-  const current = await db.query.tickets.findFirst({
-    where: and(eq(tickets.id, ticketId), eq(tickets.boardId, boardId)),
-  });
-  if (!current) throw new Error("Ticket not found");
-
-  const position = await endOfColumnPosition(boardId, status);
-  const enteringClosed = status === "closed" && current.status !== "closed";
-  const leavingClosed = status !== "closed" && current.status === "closed";
-
-  await db
-    .update(tickets)
-    .set({
-      status,
-      position,
-      closedAt: enteringClosed ? new Date() : leavingClosed ? null : current.closedAt,
-      updatedAt: new Date(),
-    })
-    .where(eq(tickets.id, ticketId));
+  await patchTicket({ ticketId, boardId }, { status });
 
   revalidatePath(`/b/${board.key}`);
 }
@@ -239,6 +190,8 @@ export async function patchTicketFieldsAction(
     description?: string;
     color?: string;
     tagIds?: string[];
+    projectName?: string;
+    repositoryUrl?: string;
   },
 ): Promise<FormActionResult> {
   const session = await auth();
@@ -249,48 +202,10 @@ export async function patchTicketFieldsAction(
   );
   if (!board) return { error: "Board not found" };
 
-  const parsed = updateTicketSchema.safeParse({
-    title: fields.title,
-    description: fields.description,
-    color: fields.color,
-    tagIds: fields.tagIds,
-  });
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
-  }
-
-  const hasScalar =
-    parsed.data.title !== undefined ||
-    parsed.data.description !== undefined ||
-    parsed.data.color !== undefined;
-
-  if (hasScalar) {
-    await db
-      .update(tickets)
-      .set({
-        ...(parsed.data.title !== undefined ? { title: parsed.data.title } : {}),
-        ...(parsed.data.description !== undefined
-          ? { description: parsed.data.description }
-          : {}),
-        ...(parsed.data.color !== undefined ? { color: parsed.data.color } : {}),
-        updatedAt: new Date(),
-      })
-      .where(and(eq(tickets.id, ticketId), eq(tickets.boardId, boardId)));
-  }
-
-  if (parsed.data.tagIds !== undefined) {
-    await db.delete(ticketTags).where(eq(ticketTags.ticketId, ticketId));
-    if (parsed.data.tagIds.length > 0) {
-      await db
-        .insert(ticketTags)
-        .values(parsed.data.tagIds.map((tagId) => ({ ticketId, tagId })));
-    }
-    if (!hasScalar) {
-      await db
-        .update(tickets)
-        .set({ updatedAt: new Date() })
-        .where(and(eq(tickets.id, ticketId), eq(tickets.boardId, boardId)));
-    }
+  try {
+    await patchTicket({ ticketId, boardId }, fields);
+  } catch (error) {
+    return { error: error instanceof TicketOperationError ? error.message : "Could not save ticket" };
   }
 
   revalidatePath(`/b/${board.key}`);

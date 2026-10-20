@@ -13,6 +13,7 @@ import { Modal } from "@/components/ui/modal";
 import { ColorPicker } from "@/components/board/color-picker";
 import { StatusSelect } from "@/components/board/status-select";
 import { UpdateChain } from "@/components/board/update-chain";
+import { AgentConnection } from "@/components/board/agent-connection";
 import {
   deleteTicketAction,
   patchTicketFieldsAction,
@@ -78,6 +79,8 @@ function TicketDetailPanel({
 }) {
   const [title, setTitle] = useState(ticket.title);
   const [description, setDescription] = useState(ticket.description);
+  const [projectName, setProjectName] = useState(ticket.projectName);
+  const [repositoryUrl, setRepositoryUrl] = useState(ticket.repositoryUrl);
   const [color, setColor] = useState<StickyColor>(ticket.color);
   const [selectedTagIds, setSelectedTagIds] = useState(
     () => new Set(ticket.tags.map((t) => t.id)),
@@ -88,6 +91,29 @@ function TicketDetailPanel({
   const [error, setError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [, startTransition] = useTransition();
+
+  const [serverFields, setServerFields] = useState(() => ({
+    title: ticket.title, description: ticket.description, projectName: ticket.projectName,
+    repositoryUrl: ticket.repositoryUrl, color: ticket.color,
+    tagIds: ticket.tags.map((tag) => tag.id).sort().join(","),
+  }));
+  const incoming = {
+    title: ticket.title, description: ticket.description, projectName: ticket.projectName,
+    repositoryUrl: ticket.repositoryUrl, color: ticket.color,
+    tagIds: ticket.tags.map((tag) => tag.id).sort().join(","),
+  };
+  // Apply server changes to clean fields while keeping any local draft in progress.
+  if (Object.keys(incoming).some((key) => incoming[key as keyof typeof incoming] !== serverFields[key as keyof typeof serverFields])) {
+    setServerFields(incoming);
+    if (title === serverFields.title) setTitle(incoming.title);
+    if (description === serverFields.description) setDescription(incoming.description);
+    if (projectName === serverFields.projectName) setProjectName(incoming.projectName);
+    if (repositoryUrl === serverFields.repositoryUrl) setRepositoryUrl(incoming.repositoryUrl);
+    if (color === serverFields.color) setColor(incoming.color);
+    if ([...selectedTagIds].sort().join(",") === serverFields.tagIds) {
+      setSelectedTagIds(new Set(ticket.tags.map((tag) => tag.id)));
+    }
+  }
 
   function patch(fields: Parameters<typeof patchTicketFieldsAction>[2]) {
     startTransition(async () => {
@@ -133,7 +159,7 @@ function TicketDetailPanel({
       </button>
 
       {/* Left: ticket body */}
-      <div className="flex min-h-0 w-full flex-col overflow-y-auto p-5 md:w-1/2 md:pr-4">
+      <div className="flex min-h-0 w-full flex-1 flex-col overflow-y-auto p-5 md:w-1/2 md:pr-4">
         <div className="mb-4 flex items-center justify-between gap-2 pr-8">
           <span className="font-mono text-xs font-medium text-slate-500">
             {boardKey}-{ticket.number}
@@ -163,6 +189,21 @@ function TicketDetailPanel({
               required
             />
           </div>
+
+          <div>
+            <Label htmlFor={`project-${ticket.id}`}>Project</Label>
+            <Input id={`project-${ticket.id}`} value={projectName} maxLength={120}
+              placeholder="e.g. PersonalJira"
+              onChange={(event) => setProjectName(event.target.value)}
+              onBlur={() => { if (projectName !== ticket.projectName) patch({ projectName }); }} />
+            <Label htmlFor={`repository-${ticket.id}`} className="mt-2">Repository URL</Label>
+            <Input id={`repository-${ticket.id}`} value={repositoryUrl} type="url"
+              placeholder="https://github.com/you/project"
+              onChange={(event) => setRepositoryUrl(event.target.value)}
+              onBlur={() => { if (repositoryUrl !== ticket.repositoryUrl) patch({ repositoryUrl }); }} />
+          </div>
+
+          <AgentConnection ticketId={ticket.id} displayId={`${boardKey}-${ticket.number}`} connected={!!ticket.agentConnection} />
 
           <div>
             <div className="mb-1 flex items-center justify-between">
@@ -266,6 +307,7 @@ function TicketDetailPanel({
           boardId={boardId}
           updates={ticket.updates}
           ticketUpdatedAt={ticket.updatedAt}
+          agentConnected={!!ticket.agentConnection}
         />
       </div>
     </div>

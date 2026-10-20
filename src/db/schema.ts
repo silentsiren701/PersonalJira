@@ -1,6 +1,7 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   doublePrecision,
+  check,
   integer,
   pgEnum,
   pgTable,
@@ -52,7 +53,7 @@ export const users = pgTable("users", {
 
 /**
  * A Board belongs to exactly one owner. There is no membership/collaboration
- * table in v1 — see docs/adr/0003-single-owner-boards-no-v1-collaboration.md.
+ * table in v1 — see CONTEXT.md ("Owner").
  */
 export const boards = pgTable(
   "boards",
@@ -108,6 +109,8 @@ export const tickets = pgTable(
     title: text("title").notNull(),
     /** Optional Markdown summary / design notes — not the progress log. */
     description: text("description").notNull().default(""),
+    projectName: text("project_name").notNull().default(""),
+    repositoryUrl: text("repository_url").notNull().default(""),
     status: ticketStatusEnum("status").notNull().default("todo"),
     color: stickyColorEnum("color").notNull().default("yellow"),
     /**
@@ -140,12 +143,26 @@ export const ticketUpdates = pgTable("ticket_updates", {
     .references(() => tickets.id, { onDelete: "cascade" }),
   /** Markdown body. */
   body: text("body").notNull(),
+  source: text("source", { enum: ["user", "agent"] }).notNull().default("user"),
+  agentName: text("agent_name"),
+  details: text("details").notNull().default(""),
+  requestId: uuid("request_id"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
+}, (table) => [
+  unique("ticket_updates_ticket_request_unique").on(table.ticketId, table.requestId),
+  check("ticket_updates_source_check", sql`${table.source} in ('user', 'agent')`),
+]);
+
+/** A revocable access credential scoped to one ticket. Store hashes only. */
+export const ticketAgentConnections = pgTable("ticket_agent_connections", {
+  ticketId: uuid("ticket_id").primaryKey().references(() => tickets.id, { onDelete: "cascade" }),
+  tokenHash: text("token_hash").notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 /** Many-to-many join between Tickets and Tags (no primary/secondary distinction). */
@@ -181,6 +198,11 @@ export const ticketsRelations = relations(tickets, ({ one, many }) => ({
   board: one(boards, { fields: [tickets.boardId], references: [boards.id] }),
   ticketTags: many(ticketTags),
   updates: many(ticketUpdates),
+  agentConnection: one(ticketAgentConnections),
+}));
+
+export const ticketAgentConnectionsRelations = relations(ticketAgentConnections, ({ one }) => ({
+  ticket: one(tickets, { fields: [ticketAgentConnections.ticketId], references: [tickets.id] }),
 }));
 
 export const ticketUpdatesRelations = relations(ticketUpdates, ({ one }) => ({

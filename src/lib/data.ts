@@ -2,7 +2,8 @@ import { and, asc, desc, eq, gte, ilike, inArray, or, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import { boards, tags, ticketTags, tickets } from "@/db/schema";
-import type { TicketWithTags, TicketWithTagsAndUpdates } from "@/lib/types";
+import type { TicketWithTags } from "@/lib/types";
+import { getTicketDto } from "@/lib/ticket-service";
 import { ticketStatuses } from "@/lib/validation";
 
 export function sevenDaysAgo(): Date {
@@ -121,20 +122,5 @@ export async function getTicketsForList(boardId: string, filters: ListFilters) {
 }
 
 export async function getTicketWithTags(ticketId: string) {
-  const row = await db.query.tickets.findFirst({
-    where: eq(tickets.id, ticketId),
-    with: {
-      ticketTags: { with: { tag: true } },
-      updates: true,
-    },
-  });
-  if (!row) return null;
-  const { updates, ...rest } = row;
-  const sorted = [...updates].sort(
-    (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
-  );
-  return {
-    ...(withTags(rest) as TicketWithTags),
-    updates: sorted,
-  } as TicketWithTagsAndUpdates;
+  return getTicketDto(ticketId);
 }
