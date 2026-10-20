@@ -73,16 +73,6 @@
 - **UI**: Tailwind CSS + shadcn/ui primitives (dialog, dropdown, badge, button).
 - No file upload/object storage, no comments/activity log, no priority field, no per-board custom workflows in v1.
 
-## Testing Decisions
-
-- Single-user scope favors targeted unit tests over full e2e coverage:
-  - Ticket-numbering allocator (concurrency-safe increment).
-  - Position/reordering math (fractional insert between neighbors, edge cases at list ends).
-  - "Closed within 7 days" boundary logic.
-  - Zod validation schemas (board key format, required fields).
-- Prefer testing Server Action logic as extracted plain functions over mocking Next.js request internals.
-- Manual smoke checklist for auth flow and drag-and-drop; revisit with Playwright only if usage grows beyond personal use.
-
 ## Out of Scope
 
 - Multi-user collaboration on a single Board (comments, activity log, shared editing)

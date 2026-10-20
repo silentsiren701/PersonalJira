@@ -21,19 +21,22 @@ export function KanbanColumn({
   boardKey: string;
   footer?: ReactNode;
 }) {
-  const { setNodeRef, isOver } = useDroppable({
+  const { setNodeRef, over } = useDroppable({
     id: status,
-    data: { status },
+    data: { kind: "column", status },
   });
+  const isOver = over?.data.current?.status === status;
 
   return (
-    <div className="flex w-72 shrink-0 flex-col rounded-xl bg-slate-200/50">
+    <div ref={setNodeRef} data-kanban-column={status} className={cn(
+      "flex w-72 shrink-0 flex-col rounded-xl bg-slate-200/50",
+      isOver && "ring-2 ring-inset ring-slate-400",
+    )}>
       <div className="flex items-center justify-between px-3 py-3">
         <h3 className="text-sm font-semibold text-slate-700">{label}</h3>
         <span className="text-xs font-medium text-slate-400">{tickets.length}</span>
       </div>
       <div
-        ref={setNodeRef}
         className={cn(
           "min-h-[100px] flex-1 space-y-3 overflow-y-auto px-3 pb-3",
           isOver && "bg-slate-200",

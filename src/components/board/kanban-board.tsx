@@ -5,7 +5,6 @@ import {
   DndContext,
   DragOverlay,
   PointerSensor,
-  closestCenter,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -14,7 +13,8 @@ import {
 
 import { CreateTicketButton } from "@/components/board/create-ticket-button";
 import { KanbanColumn } from "@/components/board/kanban-column";
-import { TicketCard } from "@/components/board/ticket-card";
+import { TicketCardPreview } from "@/components/board/ticket-card";
+import { dropIsAfterCard, kanbanCollisionDetection } from "@/lib/kanban-drag";
 import { moveTicketAction } from "@/lib/actions/ticket-actions";
 import {
   TICKET_STATUSES,
@@ -135,7 +135,7 @@ export function KanbanBoard({
     let insertIndex = toList.length;
     if (!overIsColumn) {
       const overIndex = toList.findIndex((t) => t.id === overId);
-      if (overIndex !== -1) insertIndex = overIndex;
+      if (overIndex !== -1) insertIndex = overIndex + (dropIsAfterCard(event) ? 1 : 0);
     }
     toList.splice(insertIndex, 0, movedTicket);
 
@@ -158,9 +158,10 @@ export function KanbanBoard({
     <DndContext
       id="kanban-board"
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={kanbanCollisionDetection}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
+      onDragCancel={() => setActiveTicket(null)}
     >
       <div className="flex gap-4 overflow-x-auto p-4 md:p-6 lg:p-8 justify-start">
         {TICKET_STATUSES.map(({ value, label }) => (
@@ -182,7 +183,7 @@ export function KanbanBoard({
       </div>
       <DragOverlay>
         {activeTicket ? (
-          <TicketCard ticket={activeTicket} boardKey={board.key} />
+          <TicketCardPreview ticket={activeTicket} boardKey={board.key} />
         ) : null}
       </DragOverlay>
     </DndContext>

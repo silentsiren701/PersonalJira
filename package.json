@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
@@ -16,6 +17,7 @@
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "@neondatabase/serverless": "^1.1.0",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
@@ -41,7 +43,6 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.11",
     "tailwindcss": "^4",
-    "tsx": "^4.23.1",
     "typescript": "^5"
   }
 }

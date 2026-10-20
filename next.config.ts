@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Keep unrelated lockfiles above this checkout out of Turbopack's workspace.
+  turbopack: { root: __dirname },
 };
 
 export default nextConfig;

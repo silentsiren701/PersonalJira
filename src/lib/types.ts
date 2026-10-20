@@ -8,6 +8,7 @@ export type TicketUpdate = typeof ticketUpdates.$inferSelect;
 export type TicketWithTags = Ticket & { tags: Tag[] };
 export type TicketWithTagsAndUpdates = TicketWithTags & {
   updates: TicketUpdate[];
+  agentConnection: { createdAt: Date } | null;
 };
 
 export type TicketStatus = Ticket["status"];
